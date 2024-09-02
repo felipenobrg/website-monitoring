@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 )
 
@@ -54,12 +55,21 @@ func initMonitoring() {
 	sites := []string{"https://www.alura.com.br", "https://renovecasajp.com"}
 
 	for i, site := range sites {
-		fmt.Println("Passando na posição", i, "o site", site)
+		fmt.Println("Passando na posição", i, ":", site)
+		testSite(site)
 	}
-
 }
 
 func showNames() {
 	names := []string{"Douglas", "Maria", "João"}
 	fmt.Println(names)
+}
+
+func testSite(site string) {
+	resp, _ := http.Get(site)
+	if resp.StatusCode == 200 {
+		fmt.Println("Site:", site, "foi carregado com sucesso!")
+	} else {
+		fmt.Println("Site:", site, "esta com problemas. Status Code:", resp.StatusCode)
+	}
 }
