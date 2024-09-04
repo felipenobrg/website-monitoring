@@ -1,10 +1,17 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 )
+
+const monitoring = 3
+const delay = 5
 
 func main() {
 	showIntro()
@@ -52,12 +59,20 @@ func readCommand() int {
 
 func initMonitoring() {
 	fmt.Println("Monitorando...")
-	sites := []string{"https://www.alura.com.br", "https://renovecasajp.com"}
 
-	for i, site := range sites {
-		fmt.Println("Passando na posição", i, ":", site)
-		testSite(site)
+	sites := readSites()
+
+	for i := 0; i < monitoring; i++ {
+		for i, site := range sites {
+			fmt.Println("Passando na posição", i, ":", site)
+			testSite(site)
+		}
+		time.Sleep(time.Second * delay)
+		fmt.Println("")
+
 	}
+
+	fmt.Println("")
 }
 
 func showNames() {
@@ -66,10 +81,37 @@ func showNames() {
 }
 
 func testSite(site string) {
-	resp, _ := http.Get(site)
+	resp, err := http.Get(site)
+	if err != nil {
+		fmt.Println("Ocorreu um erro:", err)
+	}
 	if resp.StatusCode == 200 {
 		fmt.Println("Site:", site, "foi carregado com sucesso!")
 	} else {
 		fmt.Println("Site:", site, "esta com problemas. Status Code:", resp.StatusCode)
 	}
+}
+
+func readSites() []string {
+	var site []string
+	file, err := os.Open("sites.txt")
+
+	if err != nil {
+		fmt.Println("Ocorreu um erro", err)
+	}
+
+	reader := bufio.NewReader(file)
+	for {
+		line, err := reader.ReadString('\n')
+		line = strings.TrimSpace(line)
+		fmt.Println(line)
+		site = append(site, line)
+		if err == io.EOF {
+			break
+		}
+		fmt.Println(line)
+	}
+
+	fmt.Println(site)
+	return site
 }
